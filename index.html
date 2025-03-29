@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Erweitertes Aktien Dashboard</title>
+
+  <!-- Tailwind CSS (via CDN) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Optional: Chart.js (für das Preis-Diagramm im Modal) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-white text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-500">
+
+  <!-- HEADER -->
+  <header class="w-full flex flex-col md:flex-row p-4 md:items-center md:justify-between bg-gray-100 dark:bg-gray-800 shadow">
+    <h1 id="title" class="text-2xl font-bold mb-2 md:mb-0">
+      Erweitertes Aktien Dashboard
+    </h1>
+    
+    <div class="controls flex flex-wrap items-center gap-2">
+      <input 
+        type="text" 
+        id="search" 
+        placeholder="Suche..." 
+        class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring"
+      />
+
+      <label id="lang-label" for="lang-select" class="font-medium text-sm">
+        Sprache:
+      </label>
+      <select 
+        id="lang-select" 
+        class="px-2 py-1 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:outline-none focus:ring"
+      >
+        <option value="de">Deutsch</option>
+        <option value="en">English</option>
+        <option value="ru">Русский</option>
+      </select>
+
+      <button 
+        id="theme-toggle"
+        class="px-3 py-1 rounded border border-pink-500 bg-gradient-to-r from-pink-500 to-teal-300 text-white shadow hover:opacity-80 focus:outline-none"
+      >
+        Dark Mode
+      </button>
+    </div>
+  </header>
+
+  <!-- HAUPTBEREICH -->
+  <main class="p-4">
+    <div class="table-container overflow-x-auto rounded-md shadow-md">
+      <table class="min-w-[650px] w-full border-collapse">
+        <thead class="bg-gray-100 dark:bg-gray-800">
+          <tr>
+            <th id="th-symbol" class="py-2 px-3 border-b border-gray-300 dark:border-gray-700 text-left font-semibold">
+              Symbol
+            </th>
+            <th id="th-name" class="py-2 px-3 border-b border-gray-300 dark:border-gray-700 text-left font-semibold">
+              Name
+            </th>
+            <th id="th-price" class="py-2 px-3 border-b border-gray-300 dark:border-gray-700 text-left font-semibold">
+              Preis
+            </th>
+            <th id="th-mcap" class="py-2 px-3 border-b border-gray-300 dark:border-gray-700 text-left font-semibold">
+              Marktkap.
+            </th>
+            <th id="th-change" class="py-2 px-3 border-b border-gray-300 dark:border-gray-700 text-left font-semibold">
+              Veränd. %
+            </th>
+          </tr>
+        </thead>
+        <tbody id="stock-list" class="[&>tr:hover]:bg-gray-50 dark:[&>tr:hover]:bg-gray-700 cursor-pointer">
+          <!-- Dynamische Aktien per JS -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <!-- MODAL (Detailansicht) -->
+  <div 
+    id="modal-backdrop" 
+    class="fixed top-0 left-0 w-full h-full bg-black/60 flex items-center justify-center hidden z-50"
+  >
+    <div 
+      id="modal-content"
+      class="relative w-11/12 max-w-xl bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg"
+    >
+      <button 
+        id="modal-close" 
+        class="modal-close-btn absolute top-2 right-2 text-gray-600 dark:text-gray-200 text-xl hover:opacity-80"
+      >
+        ✕
+      </button>
+
+      <div class="modal-section mb-4">
+        <h3 id="detail-symbol" class="text-lg font-semibold mb-1">Symbol: -</h3>
+        <p>
+          <span id="detail-name" class="text-sm"></span>
+        </p>
+      </div>
+
+      <!-- Beispiel-Chart -->
+      <div class="modal-section mb-4">
+        <h3 id="chart-title" class="text-lg font-semibold mb-1">Preisverlauf</h3>
+        <div class="h-52">
+          <canvas id="chartCanvas" class="w-full h-full"></canvas>
+        </div>
+      </div>
+
+      <!-- Fiktive Analyse -->
+      <div class="modal-section mb-4">
+        <h3 id="analysis-title" class="text-lg font-semibold mb-1">Analyse</h3>
+        <p id="analysis-content" class="text-sm">
+          <!-- Platzhalter -->
+        </p>
+      </div>
+
+      <!-- Calculator -->
+      <div class="modal-section calculator">
+        <h3 id="calc-title" class="text-lg font-semibold mb-2">Rendite-Rechner</h3>
+        <div class="flex flex-col sm:flex-row gap-2">
+          <div>
+            <label id="calc-invest-label" for="calc-invest" class="mr-1 text-sm font-medium">Investitionsbetrag:</label>
+            <input 
+              type="number" 
+              id="calc-invest" 
+              value="1000"
+              class="w-20 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded"
+            />
+          </div>
+          <div>
+            <label id="calc-growth-label" for="calc-growth" class="mr-1 text-sm font-medium">Wachstum (% p.a.):</label>
+            <input 
+              type="number" 
+              id="calc-growth" 
+              value="10"
+              class="w-20 px-1 py-1 border border-gray-300 dark:border-gray-600 rounded"
+            />
+          </div>
+          <button 
+            id="calc-btn"
+            class="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 focus:outline-none"
+          >
+            Berechnen
+          </button>
+        </div>
+        <div 
+          id="calc-result" 
+          class="calc-result mt-2 font-bold text-sm text-gray-800 dark:text-gray-100"
+        ></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dein eigenes JavaScript -->
+  <script src="assets/js/script.js"></script>
+</body>
+</html>
